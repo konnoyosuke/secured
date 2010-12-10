@@ -38,6 +38,14 @@ class SslComponent extends Object {
 	public $secured = array();
 
 	/**
+	 * Not Associative array of controllers & actions that allow
+	 * to be served from both HTTPS and regular HTTP.
+	 *
+	 * @var array
+	 */
+	public $allowed = array();
+
+	/**
 	 * If the current request comes through SSL,
 	 * this variable is set to true.
 	 *
@@ -74,6 +82,12 @@ class SslComponent extends Object {
 	public function initialize(&$controller, $settings = array()) {
 		$this->controller = $controller;
 		$this->_set($settings);
+	}
+
+	public function startup(&$controller) {
+		if ($this->allowed($this->controller->params)) {
+			return;
+		}
 
 		if (env('HTTPS') === 'on' || env('HTTPS') === true) {
 			$this->https = true;
@@ -89,6 +103,25 @@ class SslComponent extends Object {
 				$this->forceNoSSL();
 			}
 		}
+	}
+
+	/**
+	 * Determines whether the request (based on passed params)
+	 *  is allowed or not.
+	 *
+	 * @param $params Parameters containing 'controller' and 'action'
+	 * @return boolean allowed or not.
+	 */
+
+	public function allowed($params) {
+		if (array_key_exists($params['controller'], $this->allowed)) {
+			$actions = (array) $this->allowed[$params['controller']];
+			if ($actions === array('*')) {
+				return true;
+			}
+			return (in_array($params['action'], $actions));
+		}
+		return false;
 	}
 
 	/**
