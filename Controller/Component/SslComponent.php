@@ -27,7 +27,7 @@
  * @todo Test cases
  */
 
-class SslComponent extends Object {
+class SslComponent extends Componnet {
 
 	/**
 	 * Associative array of controllers & actions that need
@@ -68,24 +68,9 @@ class SslComponent extends Object {
 	 */
 	public $autoRedirect = true;
 
-	/**
-	 * Component initialize method.
-	 * Is called before the controller beforeFilter method. All local component initialization
-	 * is done here.
-	 *
-	 * @param object $controller A reference to the controller which initialized this component.
-	 * @param array $settings Optional component configurations.
-	 * @return void
-	 * @todo Perhaps move logic to startup() to allow more fine-grained programmatic control.
-	 * @todo Change Configure::read('debug') check to a $this->autoRedirect check.
-	 */
-	public function initialize(&$controller, $settings = array()) {
+	public function startup($controller) {
 		$this->controller = $controller;
-		$this->_set($settings);
-	}
-
-	public function startup(&$controller) {
-		if ($this->allowed($this->controller->params)) {
+		if ($this->allowed($this->controller->request->params)) {
 			return;
 		}
 
@@ -94,7 +79,7 @@ class SslComponent extends Object {
 		}
 
 		if ($this->autoRedirect === true) {
-			$secured = $this->ssled($this->controller->params);
+			$secured = $this->ssled($this->controller->request->params);
 
 			if ($secured && !$this->https) {
 				$this->forceSSL();
