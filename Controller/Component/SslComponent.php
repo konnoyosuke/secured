@@ -6,6 +6,8 @@
  * @license       http://opensource.org/licenses/mit-license.php The MIT License
  */
 
+App::uses('SecuredCore', 'Secured.Lib');
+
 /**
  * SSL Component
  *
@@ -27,39 +29,7 @@
  * @todo Test cases
  */
 
-class SslComponent extends Componnet {
-
-	/**
-	 * Associative array of controllers & actions that need
-	 * to be served from HTTPS instead of regular HTTP.
-	 *
-	 * @var array
-	 */
-	public $secured = array();
-
-	/**
-	 * Not Associative array of controllers & actions that allow
-	 * to be served from both HTTPS and regular HTTP.
-	 *
-	 * @var array
-	 */
-	public $allowed = array();
-
-	/**
-	 * If the current request comes through SSL,
-	 * this variable is set to true.
-	 *
-	 * @var boolean True if request was made through SSL, false otherwise.
-	 */
-	public $https = false;
-
-    /**
-     * Whether or not to secure the entire admin route.
-     * Can take either string with the prefix, or an array of the prefixii?
-     *
-     * @var string || array
-     **/
-    public $prefixes = array();
+class SslComponent extends Component {
 
 	/**
 	 * Use this component if this variable is set to true.
@@ -68,69 +38,27 @@ class SslComponent extends Componnet {
 	 */
 	public $autoRedirect = true;
 
+	public function initialize($controller) {
+		SecuredCore::init($this->settings);
+	}
+
 	public function startup($controller) {
 		$this->controller = $controller;
-		if ($this->allowed($this->controller->request->params)) {
+		if (SecuredCore::allowed($this->controller->request->params)) {
 			return;
 		}
 
-		if (env('HTTPS') === 'on' || env('HTTPS') === true) {
-			$this->https = true;
-		}
-
 		if ($this->autoRedirect === true) {
-			$secured = $this->ssled($this->controller->request->params);
+			$secured = SecuredCore::ssled($this->controller->request->params);
 
-			if ($secured && !$this->https) {
+			if ($secured && !SecuredCore::$https) {
 				$this->forceSSL();
 			}
-			elseif (!$secured && $this->https) {
+			elseif (!$secured && SecuredCore::$https) {
 				$this->forceNoSSL();
 			}
 		}
-	}
 
-	/**
-	 * Determines whether the request (based on passed params)
-	 *  is allowed or not.
-	 *
-	 * @param $params Parameters containing 'controller' and 'action'
-	 * @return boolean allowed or not.
-	 */
-
-	public function allowed($params) {
-		if (array_key_exists($params['controller'], $this->allowed)) {
-			$actions = (array) $this->allowed[$params['controller']];
-			if ($actions === array('*')) {
-				return true;
-			}
-			return (in_array($params['action'], $actions));
-		}
-		return false;
-	}
-
-	/**
-	 * Determines whether the request (based on passed params)
-	 * should be ssl'ed or not.
-	 *
-	 * @param array $params Parameters containing 'controller' and 'action'
-	 * @return boolean True if request should be ssl'ed, false otherwise.
-	 */
-	public function ssled($params) {
-        //Prefix Specific Check - allow securing of entire admin in one swoop
-        if( !empty($this->prefixes) &&  !empty($params['prefix']) && (in_array($params['prefix'], (array)$this->prefixes)) ) {
-            return true;
-        }
-
-		if (!array_key_exists($params['controller'], $this->secured)) {
-			return false;
-		}
-		$actions = (array) $this->secured[$params['controller']];
-
-		if ($actions === array('*')) {
-			return true;
-		}
-		return (in_array($params['action'], $actions));
 	}
 
 	/**
@@ -141,8 +69,7 @@ class SslComponent extends Componnet {
 	 * @todo allow conditional passing of server identifier
 	 */
 	public function forceSSL() {
-		$server = env('SERVER_NAME');
-		$this->controller->redirect("https://$server{$this->controller->here}");
+		$this->controller->redirect(SecuredCore::sslUrl($this->controller->here));
 	}
 
 	/**
@@ -154,9 +81,7 @@ class SslComponent extends Componnet {
 	 * @todo allow conditional passing of server identifier
 	 */
 	public function forceNoSSL() {
-		$server = env('SERVER_NAME');
-		$this->controller->redirect("http://$server{$this->controller->here}");
+		$this->controller->redirect(SecuredCore::noSslUrl($this->controller->here));
 	}
 
 }
-?>
