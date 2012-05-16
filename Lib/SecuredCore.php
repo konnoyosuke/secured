@@ -112,9 +112,10 @@ class SecuredCore {
 
 	public function url($url, $full = false) {
 		$originalUrl = $url;
-		if (is_string($url)) {
-			$url = Router::parse($url);
+		if (is_array($url)) {
+			$url = Router::url($url);
 		}
+		$url = Router::parse($url);
 
 		if (!self::allowed($url)) {
 			$secured = self::ssled($url);
