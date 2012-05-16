@@ -88,4 +88,16 @@ class SslComponent extends Component {
 		return SecuredCore::url($url, $full);
 	}
 
+	public function https($https = null) {
+		if ($https === null) {
+			return SecuredCore::$https;
+		}
+
+		return SecuredCore::$https = $https;
+	}
+
+	public function isSSL() {
+		return SecuredCore::isSSL();
+	}
+
 }
