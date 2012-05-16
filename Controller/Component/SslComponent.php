@@ -84,4 +84,8 @@ class SslComponent extends Component {
 		$this->controller->redirect(SecuredCore::noSslUrl($this->controller->here));
 	}
 
+	public function url($url, $full = false) {
+		return SecuredCore::url($url, $full);
+	}
+
 }
