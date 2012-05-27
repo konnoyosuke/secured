@@ -111,6 +111,10 @@ class SecuredCore {
 	}
 
 	public function url($url, $full = false) {
+		if (is_string($url) && preg_match('#(^https?:)?//#', $url)) {
+			return $url;
+		}
+
 		$originalUrl = $url;
 		if (is_array($url)) {
 			$url = Router::url($url);
