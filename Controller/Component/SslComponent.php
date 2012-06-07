@@ -44,6 +44,11 @@ class SslComponent extends Component {
 
 	public function startup($controller) {
 		$this->controller = $controller;
+
+		if ($controller->name === 'CakeError') {
+			return;
+		}
+
 		if (SecuredCore::allowed($this->controller->request->params)) {
 			return;
 		}
