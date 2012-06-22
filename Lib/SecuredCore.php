@@ -118,8 +118,8 @@ class SecuredCore {
 		$originalUrl = $url;
 		if (is_array($url)) {
 			$url = Router::url($url);
+			$url = preg_replace(sprintf('|^%s|', preg_quote(Router::getRequest()->base)), '', $url);
 		}
-		$url = preg_replace(sprintf('|^%s|', preg_quote(Router::getRequest()->base)), '', $url);
 		$url = Router::parse($url);
 
 		if (!self::allowed($url)) {
