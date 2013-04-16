@@ -93,7 +93,7 @@ class SecuredCore {
 	 * @param array $params Parameters containing 'controller' and 'action'
 	 * @return boolean True if request should be ssl'ed, false otherwise.
 	 */
-	public function ssled($params) {
+	public static function ssled($params) {
 		//Prefix Specific Check - allow securing of entire admin in one swoop
 		if( !empty(self::$prefixes) &&  !empty($params['prefix']) && (in_array($params['prefix'], (array)self::$prefixes)) ) {
 			return true;
